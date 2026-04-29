@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CERAMIQ — Studio Production</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#111;--red:#E8393A;--red2:#c52d2e;--white:#fff;
+  --bg:#0C0C0C;--bg2:#141414;--bg3:#1A1A1A;--bg4:#222;
+  --border:#2A2A2A;--border2:#333;
+  --grey:#888;--grey2:#555;--grey3:#444;
+  --green:#4CAF50;--orange:#FF9800;
+  --font-d:'Barlow Condensed',sans-serif;
+  --font-b:'Barlow',sans-serif;
+}
+body{background:var(--bg);color:var(--white);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+
+/* ── SIDEBAR ── */
+.app{display:grid;grid-template-columns:56px 1fr;min-height:100vh}
+.sidebar{background:var(--black);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px;position:sticky;top:0;height:100vh}
+.logo-s{width:36px;height:36px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:14px;color:var(--white);letter-spacing:1px;margin-bottom:16px}
+.nav-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:4px;transition:all .2s;position:relative;font-size:18px;color:var(--grey2);border:none;background:none}
+.nav-btn:hover,.nav-btn.active{background:var(--bg3);color:var(--white)}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--red);border-radius:0 2px 2px 0}
+.nav-btn[data-tip]::after{content:attr(data-tip);position:absolute;left:52px;top:50%;transform:translateY(-50%);background:var(--bg4);color:var(--white);font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 10px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;border:1px solid var(--border2)}
+.nav-btn:hover[data-tip]::after{opacity:1}
+
+/* ── MAIN ── */
+.main{overflow-y:auto}
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--black);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--font-d);font-size:18px;font-weight:700;letter-spacing:2px;display:flex;align-items:center;gap:10px}
+.topbar-title span{color:var(--red)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+
+/* ── BUTTONS ── */
+.btn{font-family:var(--font-d);font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;font-size:13px}
+.btn-primary{background:var(--red);color:var(--white)}
+.btn-primary:hover{background:var(--red2)}
+.btn-ghost{background:transparent;color:var(--grey);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--grey3);color:var(--white)}
+.btn-sm{padding:6px 14px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── CONTENT AREA ── */
+.content{padding:28px 24px;max-width:1100px}
+
+/* ── SECTIONS ── */
+.card{background:var(--bg2);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-title{font-family:var(--font-d);font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:3px;height:16px;background:var(--red);flex-shrink:0}
+
+/* ── FORM ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.span-2{grid-column:span 2}
+.span-3{grid-column:span 3}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--grey)}
+.field label .req{color:var(--red);margin-left:2px}
+.field label .opt{color:var(--grey2);font-size:9px;letter-spacing:1px;margin-left:4px}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:var(--font-b);font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;width:100%;border-radius:0}
+input:focus,select:focus,textarea:focus{border-color:var(--red)}
+input::placeholder,textarea::placeholder{color:var(--grey2)}
+select option{background:var(--bg3)}
+textarea{resize:vertical;min-height:60px}
+input[type=color]{padding:3px;height:34px;cursor:pointer}
+
+/* ── CHECKBOXES ── */
+.checks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.chk-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:all .15s;user-select:none}
+.chk-item:hover{border-color:var(--border2)}
+.chk-item.on{border-color:var(--red);background:rgba(232,57,58,.07)}
+.chk-box{width:14px;height:14px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.chk-item.on .chk-box{background:var(--red);border-color:var(--red)}
+.chk-tick{display:none;font-size:9px}
+.chk-item.on .chk-tick{display:block}
+.chk-lbl{font-size:11px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:var(--grey)}
+.chk-item.on .chk-lbl{color:var(--white)}
+
+/* ── TISSU BLOCK ── */
+.tissu-block{background:var(--bg3);border:1px solid var(--border);padding:16px;position:relative;margin-bottom:10px}
+.tissu-badge{display:inline-flex;align-items:center;gap:6px;margin-bottom:12px}
+.tissu-num{width:22px;height:22px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:12px;color:var(--white)}
+.tissu-label{font-family:var(--font-d);font-size:13px;font-weight:700;letter-spacing:2px;color:var(--white)}
+.subli-toggle{display:flex;gap:0}
+.stbtn{flex:1;padding:7px;border:1px solid var(--border);background:var(--bg3);color:var(--grey);font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.stbtn.on{background:var(--red);border-color:var(--red);color:var(--white)}
+.stbtn:first-child{border-right:none}
+
+/* ── COLOR SWATCH ── */
+.color-row{display:flex;gap:8px;align-items:center}
+.color-swatch{width:34px;height:34px;border:1px solid var(--border2);cursor:pointer;flex-shrink:0;position:relative;overflow:hidden}
+.color-swatch input[type=color]{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);cursor:pointer;border:none;padding:0;opacity:0}
+.color-preview{position:absolute;inset:0;pointer-events:none}
+
+/* ── UPLOAD ── */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.upload-zone{border:1.5px dashed var(--border2);padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.upload-zone:hover{border-color:var(--red);background:rgba(232,57,58,.03)}
+.upload-zone.has-file{border-style:solid;border-color:var(--border2)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:22px;opacity:.3}
+.upload-lbl{font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--grey)}
+.upload-sub{font-size:10px;color:var(--grey2)}
+.upload-preview{width:100%;height:100%;object-fit:contain;position:absolute;inset:0;padding:6px}
+
+/* ── LOGO BLOCK ── */
+.logo-entry{background:var(--bg3);border:1px solid var(--border);padding:12px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:10px;align-items:center}
+.logo-entry-num{font-family:var(--font-d);font-weight:900;font-size:14px;color:var(--red);width:20px}
+.remove-btn{background:none;border:none;color:var(--grey2);cursor:pointer;font-size:16px;padding:4px;transition:color .15s}
+.remove-btn:hover{color:var(--red)}
+
+/* ── ZIP ── */
+.zip-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end}
+
+/* ── TABS (dans settings) ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{font-family:var(--font-d);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;cursor:pointer;color:var(--grey);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--white)}
+.tab.active{color:var(--red);border-bottom-color:var(--red)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── REF CARDS ── */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.ref-card{background:var(--bg3);border:1px solid var(--border);padding:14px;cursor:pointer;transition:all .15s;position:relative}
+.ref-card:hover{border-color:var(--border2)}
+.ref-card.selected{border-color:var(--red);background:rgba(232,57,58,.05)}
+.ref-card-name{font-family:var(--font-d);font-size:16px;font-weight:900;letter-spacing:1px;margin-bottom:4px}
+.ref-card-type{font-size:10px;color:var(--grey);letter-spacing:1px;text-transform:uppercase}
+.ref-card-badge{position:absolute;top:10px;right:10px;background:var(--red);color:var(--white);font-family:var(--font-d);font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 6px}
+
+/* ── PARAM ROW ── */
+.param-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.param-row:last-child{border-bottom:none}
+.param-label{flex:1;font-size:12px;color:var(--grey)}
+.param-req-toggle{display:flex;gap:4px}
+.req-btn{font-family:var(--font-d);font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 8px;border:1px solid var(--border2);background:none;color:var(--grey2);cursor:pointer;transition:all .15s;text-transform:uppercase}
+.req-btn.active-req{background:var(--red);border-color:var(--red);color:var(--white)}
+.req-btn.active-opt{background:var(--grey3);border-color:var(--grey3);color:var(--white)}
+
+/* ── LAYOUT EDITOR ── */
+.layout-grid{display:grid;grid-template-columns:1fr 280px;gap:20px}
+.canvas-preview{background:var(--bg3);border:1px solid var(--border);padding:16px;aspect-ratio:297/210;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.layout-controls{display:flex;flex-direction:column;gap:12px}
+.color-pair{display:flex;gap:8px;align-items:center}
+.color-pair label{font-size:10px;color:var(--grey);letter-spacing:1px;text-transform:uppercase;flex:1}
+
+/* ── GENERATE PANEL ── */
+.gen-panel{background:var(--bg2);border:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:16px}
+.gen-docs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.gen-doc{background:var(--bg3);border:1px solid var(--border);padding:16px;text-align:center}
+.gen-doc-icon{font-size:32px;margin-bottom:8px}
+.gen-doc-name{font-family:var(--font-d);font-size:14px;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.gen-doc-desc{font-size:10px;color:var(--grey)}
+.gen-doc.ready{border-color:var(--green)}
+.gen-doc.ready .gen-doc-icon::after{content:' ✓'}
+
+/* ── STATUS ── */
+.status{font-size:11px;text-align:center;min-height:16px;letter-spacing:1px}
+.status.ok{color:var(--green)}
+.status.err{color:var(--red)}
+.status.info{color:var(--grey)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.section-label{font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--grey2);margin-bottom:12px}
+
+/* ── BADGE ── */
+.badge{display:inline-block;font-family:var(--font-d);font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;text-transform:uppercase}
+.badge-red{background:var(--red);color:var(--white)}
+.badge-grey{background:var(--bg4);color:var(--grey)}
+
+/* ── TOGGLE ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.toggle-lbl{font-size:12px;color:var(--grey)}
+.toggle{width:34px;height:18px;background:var(--bg4);border-radius:9px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--red)}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:var(--white);border-radius:50%;top:2px;left:2px;transition:left .2s}
+.toggle.on::after{left:18px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar">
+  <div class="logo-s">CQ</div>
+  <button class="nav-btn active" data-page="commande" data-tip="NOUVELLE COMMANDE" onclick="showPage('commande',this)">📋</button>
+  <button class="nav-btn" data-page="refs" data-tip="RÉFÉRENCES PRODUITS" onclick="showPage('refs',this)">📦</button>
+  <button class="nav-btn" data-page="layout" data-tip="MISE EN PAGE" onclick="showPage('layout',this)">🎨</button>
+  <button class="nav-btn" data-page="params" data-tip="PARAMÈTRES CHAMPS" onclick="showPage('params',this)">⚙️</button>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+<!-- ════ PAGE : COMMANDE ════ -->
+<div class="page active" id="page-commande">
+  <div class="topbar">
+    <div class="topbar-title">NOUVELLE <span>COMMANDE</span></div>
+    <div class="topbar-actions">
+      <span class="status info" id="statusMsg"></span>
+      <button class="btn btn-ghost btn-sm" onclick="resetForm()">↺ RÉINITIALISER</button>
+      <button class="btn btn-primary" onclick="generateAll()" id="btnGen">
+        ⚡ GÉNÉRER LES 3 DOCUMENTS
+      </button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- Sélection référence -->
+    <div class="card">
+      <div class="card-title">Référence produit</div>
+      <div class="ref-grid" id="refGrid"></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="field" style="flex:1">
+          <label>Référence personnalisée <span class="opt">(si non listée)</span></label>
+          <input type="text" id="f_ref_custom" placeholder="Ex: MONT-BLANC SUBLI" oninput="updatePreview()">
+        </div>
+        <div class="field" style="flex:1">
+          <label>Type de produit</label>
+          <select id="f_type_produit" onchange="updatePreview()">
+            <option value="">— Sélectionner —</option>
+            <option>Combi triathlon MC</option>
+            <option>Combi triathlon sans manches</option>
+            <option>Combi triathlon ML</option>
+            <option>Maillot cyclisme MC</option>
+            <option>Maillot cyclisme femme MC</option>
+            <option>Débardeur</option>
+            <option>Veste</option>
+            <option>Tour de cou</option>
+            <option>Autre</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Identification -->
+    <div class="card" id="section-identification">
+      <div class="card-title">Identification commande</div>
+      <div class="grid-3">
+        <div class="field span-2" id="wrap-client">
+          <label>Client <span class="req">*</span></label>
+          <input type="text" id="f_client" placeholder="Nom du client / club" oninput="updatePreview()">
+        </div>
+        <div class="field" id="wrap-email">
+          <label>Email client <span class="opt">facultatif</span></label>
+          <input type="email" id="f_email" placeholder="client@email.com" oninput="updatePreview()">
+        </div>
+        <div class="field" id="wrap-ref">
+          <label>Code commande <span class="req">*</span></label>
+          <input type="text" id="f_code" placeholder="Ex: MOHO" oninput="updatePreview()">
+        </div>
+        <div class="field" id="wrap-arrivee">
+          <label>Date arrivée commande <span class="req">*</span></label>
+          <input type="date" id="f_arrivee" oninput="updatePreview()">
+        </div>
+        <div class="field" id="wrap-depart">
+          <label>Date départ souhaitée</label>
+          <select id="f_delai" onchange="calcDepart()">
+            <option value="">— Délai production —</option>
+            <option value="42">6 semaines</option>
+            <option value="56">8 semaines</option>
+            <option value="70">10 semaines</option>
+            <option value="84">12 semaines</option>
+            <option value="custom">Personnalisé</option>
+          </select>
+        </div>
+        <div class="field" id="wrap-depart-date" style="display:none">
+          <label>Date départ manuelle</label>
+          <input type="date" id="f_depart" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Quantités par taille -->
+    <div class="card" id="section-tailles">
+      <div class="card-title">Quantités par taille</div>
+      <div id="taille-table-wrap" style="overflow-x:auto">
+        <!-- généré par JS -->
+      </div>
+    </div>
+
+    <!-- Matière -->
+    <div class="card" id="section-matiere">
+      <div class="card-title">Matière</div>
+      <div id="tissus-container"></div>
+    </div>
+
+    <!-- Couleurs techniques -->
+    <div class="card" id="section-couleurs">
+      <div class="card-title">Couleurs techniques</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Lycra</label>
+          <div class="color-row">
+            <div class="color-swatch"><div class="color-preview" id="cp_lycra" style="background:#111"></div><input type="color" value="#111111" oninput="syncColor('lycra',this.value)"></div>
+            <input type="text" id="c_lycra" placeholder="Ref / Pantone" oninput="updatePreview()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Surfilage</label>
+          <div class="color-row">
+            <div class="color-swatch"><div class="color-preview" id="cp_surfilage" style="background:#111"></div><input type="color" value="#111111" oninput="syncColor('surfilage',this.value)"></div>
+            <input type="text" id="c_surfilage" placeholder="Ref / Pantone" oninput="updatePreview()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Coutures</label>
+          <div class="color-row">
+            <div class="color-swatch"><div class="color-preview" id="cp_coutures" style="background:#111"></div><input type="color" value="#111111" oninput="syncColor('coutures',this.value)"></div>
+            <input type="text" id="c_coutures" placeholder="Ref / Pantone" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="card" id="section-options">
+      <div class="card-title">Options & Accessoires</div>
+      <div class="checks-grid" id="optionsGrid"></div>
+
+      <!-- ZIP conditionnel -->
+      <div id="zip-details" style="display:none;margin-top:14px">
+        <div class="zip-row">
+          <div class="field">
+            <label>Type de zip</label>
+            <div class="subli-toggle">
+              <button class="stbtn on" onclick="setZipType(this,'1/2 ZIP')">1/2 ZIP</button>
+              <button class="stbtn" onclick="setZipType(this,'ZIP TOTAL')">ZIP TOTAL</button>
+              <button class="stbtn" onclick="setZipType(this,'AUTRE')">AUTRE</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Taille du zip</label>
+            <input type="text" id="f_zip_taille" placeholder="Ex: 35 cm" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Marque / Modèle</label>
+            <input type="text" id="f_zip_marque" placeholder="Ex: WITH ME, YKK..." oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Logos & Marquage</div>
+      <div id="logos-container"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addLogo()" style="margin-top:8px">+ AJOUTER UN LOGO</button>
+    </div>
+
+    <!-- Visuels -->
+    <div class="card" id="section-visuels">
+      <div class="card-title">Visuels</div>
+      <div class="upload-grid">
+        <div class="upload-zone" id="uz_face">
+          <input type="file" accept="image/*" onchange="handleUpload('face',this)">
+          <div class="upload-icon">📸</div>
+          <div class="upload-lbl">Vue 3D — Face</div>
+          <div class="upload-sub">100 × 132 mm</div>
+        </div>
+        <div class="upload-zone" id="uz_dos">
+          <input type="file" accept="image/*" onchange="handleUpload('dos',this)">
+          <div class="upload-icon">📸</div>
+          <div class="upload-lbl">Vue 3D — Dos</div>
+          <div class="upload-sub">100 × 132 mm</div>
+        </div>
+        <div class="upload-zone" id="uz_plan">
+          <input type="file" accept="image/*" onchange="handleUpload('plan',this)">
+          <div class="upload-icon">📐</div>
+          <div class="upload-lbl">Vue à plat</div>
+          <div class="upload-sub">100 × 140 mm</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remarques -->
+    <div class="card" id="section-remarques">
+      <div class="card-title">Remarques</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Remarques BAT client</label>
+          <textarea id="f_rem_bat" placeholder="Informations pour le client..."></textarea>
+        </div>
+        <div class="field">
+          <label>Instructions atelier PROD</label>
+          <textarea id="f_rem_prod" placeholder="Instructions découpe / confection..."></textarea>
+        </div>
+        <div class="field">
+          <label>Instructions sublimeur</label>
+          <textarea id="f_rem_subli" placeholder="Profil couleur, résolution..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Génération -->
+    <div class="gen-panel">
+      <div class="gen-docs">
+        <div class="gen-doc" id="gd-bat">
+          <div class="gen-doc-icon">📄</div>
+          <div class="gen-doc-name">BAT CLIENT</div>
+          <div class="gen-doc-desc">A4 Paysage — Validation client</div>
+        </div>
+        <div class="gen-doc" id="gd-prod">
+          <div class="gen-doc-icon">🏭</div>
+          <div class="gen-doc-name">BON PRODUCTION</div>
+          <div class="gen-doc-desc">A4 Portrait — Atelier confection</div>
+        </div>
+        <div class="gen-doc" id="gd-subli">
+          <div class="gen-doc-icon">🎨</div>
+          <div class="gen-doc-name">BON SUBLIMATION</div>
+          <div class="gen-doc-desc">A4 Portrait — Atelier subli</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-primary" onclick="generateAll()">⚡ GÉNÉRER LES 3 PDF</button>
+        <button class="btn btn-ghost" onclick="generateOne('bat')">BAT SEUL</button>
+        <button class="btn btn-ghost" onclick="generateOne('prod')">PROD SEUL</button>
+        <button class="btn btn-ghost" onclick="generateOne('subli')">SUBLI SEUL</button>
+      </div>
+      <div class="status info" id="genStatus"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ PAGE : RÉFÉRENCES ════ -->
+<div class="page" id="page-refs">
+  <div class="topbar">
+    <div class="topbar-title">RÉFÉRENCES <span>PRODUITS</span></div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="showAddRef()">+ NOUVELLE RÉFÉRENCE</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="refs-list"></div>
+    <!-- Formulaire ajout/edit ref -->
+    <div id="ref-editor" style="display:none">
+      <div class="card">
+        <div class="card-title" id="ref-editor-title">NOUVELLE RÉFÉRENCE</div>
+        <div class="grid-3" style="margin-bottom:14px">
+          <div class="field"><label>Nom référence <span class="req">*</span></label><input type="text" id="re_nom" placeholder="Ex: EVIAN SUBLI"></div>
+          <div class="field"><label>Type produit</label>
+            <select id="re_type">
+              <option>Combi triathlon MC</option>
+              <option>Combi triathlon sans manches</option>
+              <option>Combi triathlon ML</option>
+              <option>Maillot cyclisme MC</option>
+              <option>Maillot cyclisme femme MC</option>
+              <option>Débardeur</option>
+              <option>Veste</option>
+              <option>Tour de cou</option>
+              <option>Autre</option>
+            </select>
+          </div>
+          <div class="field"><label>Tailles disponibles</label>
+            <select id="re_tailles">
+              <option value="XXS,XS,S,M,L,XL,XXL">XXS → XXL (7 tailles)</option>
+              <option value="XS,S,M,L,XL,XXL">XS → XXL (6 tailles)</option>
+              <option value="XS,S,M,L,XL">XS → XL (5 tailles)</option>
+              <option value="S,M,L,XL,XXL">S → XXL (5 tailles)</option>
+              <option value="UNIQUE">Taille unique</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-label">Codes tailles (XXS → XXL)</div>
+        <div class="grid-4" style="margin-bottom:14px" id="re_codes_wrap">
+          <div class="field"><label>XXS</label><input type="text" id="rc_XXS" placeholder="Ex: 475"></div>
+          <div class="field"><label>XS</label><input type="text" id="rc_XS" placeholder="468"></div>
+          <div class="field"><label>S</label><input type="text" id="rc_S" placeholder="451"></div>
+          <div class="field"><label>M</label><input type="text" id="rc_M" placeholder="444"></div>
+          <div class="field"><label>L</label><input type="text" id="rc_L" placeholder="437"></div>
+          <div class="field"><label>XL</label><input type="text" id="rc_XL" placeholder="420"></div>
+          <div class="field"><label>XXL</label><input type="text" id="rc_XXL" placeholder="413"></div>
+        </div>
+
+        <div class="section-label">Tissus par défaut</div>
+        <div id="re_tissus_wrap" style="margin-bottom:14px">
+          <div class="grid-3">
+            <div class="field"><label>Tissu 1 — Nom</label><input type="text" id="re_t1_nom" placeholder="Ex: ATLANTA"></div>
+            <div class="field"><label>Tissu 1 — Localisation</label><input type="text" id="re_t1_loc" placeholder="Ex: Short panel"></div>
+            <div class="field"><label>Tissu 1 — Type</label>
+              <select id="re_t1_type"><option value="WARP KNIT">WARP KNIT (couleur unie)</option><option value="SUBLI">SUBLIMATION</option></select>
+            </div>
+            <div class="field"><label>Tissu 2 — Nom</label><input type="text" id="re_t2_nom" placeholder="Ex: 12/12"></div>
+            <div class="field"><label>Tissu 2 — Localisation</label><input type="text" id="re_t2_loc" placeholder="Ex: Front panel, Sleeve"></div>
+            <div class="field"><label>Tissu 2 — Type</label>
+              <select id="re_t2_type"><option value="SUBLI">SUBLIMATION</option><option value="WARP KNIT">WARP KNIT (couleur unie)</option></select>
+            </div>
+            <div class="field"><label>Tissu 3 — Nom</label><input type="text" id="re_t3_nom" placeholder="Optionnel"></div>
+            <div class="field"><label>Tissu 3 — Localisation</label><input type="text" id="re_t3_loc"></div>
+            <div class="field"><label>Tissu 3 — Type</label>
+              <select id="re_t3_type"><option value="">— Aucun —</option><option value="SUBLI">SUBLIMATION</option><option value="WARP KNIT">WARP KNIT</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">Accessoires par défaut</div>
+        <div class="checks-grid" id="re_opts_grid" style="margin-bottom:14px"></div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="saveRef()">ENREGISTRER</button>
+          <button class="btn btn-ghost" onclick="cancelRef()">ANNULER</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ PAGE : MISE EN PAGE ════ -->
+<div class="page" id="page-layout">
+  <div class="topbar">
+    <div class="topbar-title">MISE EN <span>PAGE</span></div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="resetLayout()">↺ PAR DÉFAUT</button>
+      <button class="btn btn-primary btn-sm" onclick="saveLayout()">ENREGISTRER</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'lt-bat')">BAT CLIENT</div>
+      <div class="tab" onclick="switchTab(this,'lt-prod')">BON PROD</div>
+      <div class="tab" onclick="switchTab(this,'lt-subli')">BON SUBLI</div>
+      <div class="tab" onclick="switchTab(this,'lt-global')">GLOBAL</div>
+    </div>
+
+    <div class="tab-panel active" id="lt-bat">
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">Couleurs</div>
+            <div class="param-row"><span class="param-label">Couleur principale</span><div class="color-row"><div class="color-swatch" style="width:28px;height:28px"><div class="color-preview" id="lc_primary" style="background:#E8393A"></div><input type="color" value="#E8393A" oninput="updateLayoutColor('primary',this.value)"></div><span style="font-size:11px;color:var(--grey)" id="lv_primary">#E8393A</span></div></div>
+            <div class="param-row"><span class="param-label">Couleur fond header</span><div class="color-row"><div class="color-swatch" style="width:28px;height:28px"><div class="color-preview" id="lc_header" style="background:#111111"></div><input type="color" value="#111111" oninput="updateLayoutColor('header',this.value)"></div><span style="font-size:11px;color:var(--grey)" id="lv_header">#111111</span></div></div>
+            <div class="param-row"><span class="param-label">Couleur bande infos</span><div class="color-row"><div class="color-swatch" style="width:28px;height:28px"><div class="color-preview" id="lc_band" style="background:#111111"></div><input type="color" value="#111111" oninput="updateLayoutColor('band',this.value)"></div><span style="font-size:11px;color:var(--grey)" id="lv_band">#111111</span></div></div>
+            <div class="param-row"><span class="param-label">Couleur accent</span><div class="color-row"><div class="color-swatch" style="width:28px;height:28px"><div class="color-preview" id="lc_accent" style="background:#E8393A"></div><input type="color" value="#E8393A" oninput="updateLayoutColor('accent',this.value)"></div><span style="font-size:11px;color:var(--grey)" id="lv_accent">#E8393A</span></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Tailles zones visuelles</div>
+            <div class="param-row"><span class="param-label">Largeur bande infos droite (mm)</span><input type="number" id="ls_band_w" value="62" min="40" max="90" style="width:70px;padding:5px 8px" oninput="updatePreviewLayout()"></div>
+            <div class="param-row"><span class="param-label">Ratio hauteur 3D (% page)</span><input type="range" id="ls_3d_ratio" min="30" max="70" value="55" style="flex:1" oninput="updatePreviewLayout()"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Affichage</div>
+            <div class="toggle-row"><span class="toggle-lbl">Afficher le footer</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="toggle-row"><span class="toggle-lbl">Logo en header</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="toggle-row"><span class="toggle-lbl">Repères de cadrage (croix rouges)</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Aperçu</div>
+          <div class="canvas-preview" id="layout-preview-bat">
+            <div style="color:var(--grey2);font-size:11px;text-align:center">
+              Aperçu généré à la<br>génération du PDF
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="lt-prod">
+      <div class="card"><div class="card-title">BON PRODUCTION — Options mise en page</div>
+        <div class="toggle-row"><span class="toggle-lbl">Afficher grille qualité</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><span class="toggle-lbl">Afficher zone instructions CERAMIQ</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><span class="toggle-lbl">Afficher zone retour atelier</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="param-row"><span class="param-label">Lignes supplémentaires dans tableau tailles</span><input type="number" id="ls_extra_rows" value="1" min="0" max="3" style="width:60px;padding:5px 8px"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="lt-subli">
+      <div class="card"><div class="card-title">BON SUBLIMATION — Options mise en page</div>
+        <div class="toggle-row"><span class="toggle-lbl">Afficher tableau fichiers impression</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><span class="toggle-lbl">Afficher étapes validation</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><span class="toggle-lbl">Zone retour sublimeur</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="lt-global">
+      <div class="card"><div class="card-title">Paramètres globaux</div>
+        <div class="param-row"><span class="param-label">Site web footer</span><input type="text" id="lg_site" value="www.ceramiq-wear.com" style="flex:1;padding:6px 10px"></div>
+        <div class="param-row"><span class="param-label">Instagram footer</span><input type="text" id="lg_insta" value="@ceramiq_wear" style="flex:1;padding:6px 10px"></div>
+        <div class="param-row"><span class="param-label">Email footer</span><input type="text" id="lg_email" value="contact@ceramiq-wear.com" style="flex:1;padding:6px 10px"></div>
+        <div class="param-row"><span class="param-label">Mention confidentiel</span><input type="text" id="lg_conf" value="Document confidentiel — CERAMIQ WEAR" style="flex:1;padding:6px 10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ PAGE : PARAMÈTRES CHAMPS ════ -->
+<div class="page" id="page-params">
+  <div class="topbar">
+    <div class="topbar-title">PARAMÈTRES <span>CHAMPS</span></div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveParams()">ENREGISTRER</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Champs obligatoires / facultatifs</div>
+      <p style="font-size:11px;color:var(--grey);margin-bottom:16px">Définissez quels champs sont obligatoires avant la génération PDF. Les champs "masqués" n'apparaissent pas dans le formulaire.</p>
+      <div id="params-fields-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Options accessoires disponibles</div>
+      <div id="params-options-list" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="new-option-input" placeholder="Nouvelle option..." style="flex:1;padding:8px 12px">
+        <button class="btn btn-ghost btn-sm" onclick="addOption()">+ AJOUTER</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+const uploadedImages = {face:null,dos:null,plan:null};
+const selectedOptions = new Set();
+let zipType = '1/2 ZIP';
+let editingRefIdx = -1;
+let logoCount = 0;
+
+// Layout config
+let layoutCfg = {
+  primary:'#E8393A', header:'#111111', band:'#111111', accent:'#E8393A',
+  band_w:62, ratio_3d:55,
+  site:'www.ceramiq-wear.com', insta:'@ceramiq_wear',
+  email:'contact@ceramiq-wear.com', conf:'Document confidentiel — CERAMIQ WEAR'
+};
+
+// Champs config
+let fieldsCfg = {
+  client:{label:'Client',req:true,visible:true},
+  email:{label:'Email client',req:false,visible:true},
+  ref:{label:'Code commande',req:true,visible:true},
+  arrivee:{label:'Date arrivée',req:true,visible:true},
+  depart:{label:'Date départ',req:false,visible:true},
+  remarques:{label:'Remarques',req:false,visible:true},
+};
+
+// Options accessoires
+let optionsList = [
+  'PAD CHAMOIS','GRIP BRAS','GRIP CUISSES','ZIP','POCHE DOS',
+  'BANDES RÉFLÉCH.','RENFORTS ÉPAULES','BINDING'
+];
+
+// Références produits
+let refs = [
+  {nom:'EVIAN',type:'Combi triathlon MC',
+   tailles:'XXS,XS,S,M,L,XL,XXL',
+   codes:{XXS:'475',XS:'468',S:'451',M:'444',L:'437',XL:'420',XXL:'413'},
+   tissus:[
+     {nom:'ATLANTA',loc:'Short panel',type:'WARP KNIT'},
+     {nom:'12/12',loc:'Front panel, Sleeve, Gripper',type:'SUBLI'},
+   ],
+   options:['PAD CHAMOIS','GRIP BRAS','ZIP']},
+  {nom:'HAWAÏ',type:'Combi triathlon sans manches',
+   tailles:'XXS,XS,S,M,L,XL,XXL',
+   codes:{XXS:'406',XS:'390',S:'383',M:'376',L:'369',XL:'352',XXL:'345'},
+   tissus:[
+     {nom:'ATLANTA',loc:'Short panel',type:'WARP KNIT'},
+     {nom:'12/12',loc:'Front panel, Binding, Gripper',type:'SUBLI'},
+   ],
+   options:['PAD CHAMOIS','ZIP','BINDING']},
+  {nom:'ORCIÈRE',type:'Maillot cyclisme MC',
+   tailles:'XXS,XS,S,M,L,XL,XXL',
+   codes:{XXS:'338',XS:'321',S:'314',M:'307',L:'291',XL:'284',XXL:'277'},
+   tissus:[{nom:'12/12',loc:'Corps entier',type:'SUBLI'}],
+   options:[]},
+  {nom:'MEXICO',type:'Débardeur',
+   tailles:'XXS,XS,S,M,L,XL,XXL',
+   codes:{XXS:'',XS:'',S:'',M:'',L:'',XL:'',XXL:''},
+   tissus:[
+     {nom:'12/12',loc:'Corps',type:'SUBLI'},
+     {nom:'12/12',loc:'Biais',type:'SUBLI'},
+   ],
+   options:['BINDING']},
+  {nom:"VAL D'ISÈRE",type:'Combi triathlon ML',
+   tailles:'XXS,XS,S,M,L,XL,XXL',
+   codes:{XXS:'192',XS:'185',S:'178',M:'161',L:'154',XL:'147',XXL:'130'},
+   tissus:[
+     {nom:'ATLANTA',loc:'Short panel',type:'WARP KNIT'},
+     {nom:'12/12',loc:'Corps, Manches longues',type:'SUBLI'},
+   ],
+   options:['PAD CHAMOIS','GRIP BRAS','GRIP CUISSES','ZIP']},
+  {nom:'TIGNES',type:'Maillot cyclisme femme MC',
+   tailles:'XXS,XS,S,M,L,XL,XXL',
+   codes:{XXS:'260',XS:'253',S:'246',M:'239',L:'222',XL:'215',XXL:'208'},
+   tissus:[{nom:'12/12',loc:'Corps entier',type:'SUBLI'}],
+   options:[]},
+  {nom:'VENOSC',type:'Veste',
+   tailles:'XS,S,M,L,XL,XXL',
+   codes:{XS:'',S:'',M:'',L:'',XL:'',XXL:''},
+   tissus:[{nom:'VITA',loc:'Corps entier',type:'WARP KNIT'}],
+   options:['ZIP']},
+  {nom:'TDC',type:'Tour de cou',
+   tailles:'UNIQUE',
+   codes:{UNIQUE:'123'},
+   tissus:[{nom:'12/12',loc:'Corps',type:'SUBLI'}],
+   options:[]},
+];
+
+let selectedRef = null;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════════════════════
+function showPage(id, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function switchTab(el, panelId){
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const parent = el.closest('.content') || el.closest('.page');
+  parent.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+function init(){
+  renderRefGrid();
+  renderOptionsGrid();
+  renderTissusBlanks();
+  renderParamsFields();
+  renderParamsOptions();
+  renderRefsList();
+  document.getElementById('f_arrivee').value = new Date().toISOString().split('T')[0];
+  addLogo();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RÉFÉRENCE GRID (sélection)
+// ══════════════════════════════════════════════════════════════════════════════
+function renderRefGrid(){
+  const grid = document.getElementById('refGrid');
+  grid.innerHTML = refs.map((r,i)=>`
+    <div class="ref-card ${selectedRef===i?'selected':''}" onclick="selectRef(${i})">
+      <div class="ref-card-name">${r.nom}</div>
+      <div class="ref-card-type">${r.type}</div>
+      ${r.tailles==='UNIQUE'?'<div class="ref-card-badge">UNIQUE</div>':''}
+    </div>
+  `).join('');
+}
+
+function selectRef(idx){
+  selectedRef = idx;
+  renderRefGrid();
+  const r = refs[idx];
+  // Remplir les champs
+  document.getElementById('f_ref_custom').value = r.nom;
+  // Type
+  const sel = document.getElementById('f_type_produit');
+  for(let o of sel.options) if(o.text===r.type){sel.value=o.value;break;}
+  // Tissus
+  renderTissusFromRef(r);
+  // Options
+  selectedOptions.clear();
+  r.options.forEach(o=>selectedOptions.add(o));
+  renderOptionsGrid();
+  // Tailles
+  renderTaillesTable(r.tailles.split(','), r.codes);
+  updatePreview();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TISSUS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderTissusBlanks(){
+  renderTissusFromRef({tissus:[{nom:'',loc:'',type:'SUBLI'},{nom:'',loc:'',type:'SUBLI'}]});
+}
+
+function renderTissusFromRef(r){
+  const tissus = r.tissus || [{nom:'',loc:'',type:'SUBLI'}];
+  const c = document.getElementById('tissus-container');
+  c.innerHTML = tissus.map((t,i)=>`
+    <div class="tissu-block" id="tissu-block-${i}">
+      <div class="tissu-badge">
+        <div class="tissu-num">${i+1}</div>
+        <div class="tissu-label">TISSU ${i+1}</div>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label>Nom tissu</label>
+          <input type="text" id="t${i}_nom" value="${t.nom}" placeholder="Ex: ATLANTA" oninput="updatePreview()">
+        </div>
+        <div class="field"><label>Référence</label>
+          <input type="text" id="t${i}_ref" placeholder="Réf tissu" oninput="updatePreview()">
+        </div>
+        <div class="field"><label>Localisation</label>
+          <input type="text" id="t${i}_loc" value="${t.loc}" placeholder="Ex: Short panel" oninput="updatePreview()">
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;margin-top:10px">
+        <div style="flex:0 0 auto">
+          <label style="font-size:10px;color:var(--grey);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:5px">Type</label>
+          <div class="subli-toggle">
+            <button class="stbtn ${t.type==='SUBLI'?'on':''}" onclick="setTissuType(${i},this,'SUBLI')">Sublimation</button>
+            <button class="stbtn ${t.type!=='SUBLI'?'on':''}" onclick="setTissuType(${i},this,'COULEUR')">Couleur unie</button>
+          </div>
+          <input type="hidden" id="t${i}_type" value="${t.type}">
+        </div>
+        <div class="field" style="flex:1">
+          <label>Couleur / Ref Pantone</label>
+          <div class="color-row">
+            <div class="color-swatch"><div class="color-preview" id="tcp_${i}" style="background:#fff"></div><input type="color" value="#ffffff" oninput="syncTissuColor(${i},this.value)"></div>
+            <input type="text" id="t${i}_col" placeholder="Ref couleur..." oninput="updatePreview()" style="flex:1">
+          </div>
+        </div>
+        ${i>0?`<button onclick="removeTissu(${i})" style="background:none;border:none;color:var(--grey2);cursor:pointer;font-size:20px;align-self:flex-end;padding:4px;line-height:1" title="Supprimer">×</button>`:''}
+      </div>
+    </div>
+  `).join('') + `<button class="btn btn-ghost btn-sm" onclick="addTissu()" style="margin-top:4px">+ AJOUTER TISSU</button>`;
+}
+
+function getTissusCount(){
+  let i=0; while(document.getElementById(`t${i}_nom`)) i++; return i;
+}
+function addTissu(){
+  const n = getTissusCount();
+  renderTissusFromRef({tissus:[...Array(n).keys()].map(i=>({
+    nom: document.getElementById(`t${i}_nom`)?.value||'',
+    loc: document.getElementById(`t${i}_loc`)?.value||'',
+    type: document.getElementById(`t${i}_type`)?.value||'SUBLI'
+  })).concat({nom:'',loc:'',type:'SUBLI'})});
+}
+function removeTissu(idx){
+  const n=getTissusCount();
+  const tissus=[...Array(n).keys()].filter(i=>i!==idx).map(i=>({
+    nom:document.getElementById(`t${i}_nom`)?.value||'',
+    loc:document.getElementById(`t${i}_loc`)?.value||'',
+    type:document.getElementById(`t${i}_type`)?.value||'SUBLI'
+  }));
+  renderTissusFromRef({tissus});
+}
+function setTissuType(idx,btn,val){
+  btn.closest('.subli-toggle').querySelectorAll('.stbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(`t${idx}_type`).value=val;
+}
+function syncTissuColor(idx,val){
+  document.getElementById(`tcp_${idx}`).style.background=val;
+  document.getElementById(`t${idx}_col`).value=val;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// OPTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderOptionsGrid(){
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = optionsList.map(opt=>`
+    <div class="chk-item ${selectedOptions.has(opt)?'on':''}" onclick="toggleOpt('${opt}',this)">
+      <div class="chk-box"><span class="chk-tick">✓</span></div>
+      <span class="chk-lbl">${opt}</span>
+    </div>
+  `).join('');
+}
+function toggleOpt(opt,el){
+  el.classList.toggle('on');
+  if(selectedOptions.has(opt)) selectedOptions.delete(opt);
+  else selectedOptions.add(opt);
+  // Afficher détails ZIP
+  document.getElementById('zip-details').style.display = selectedOptions.has('ZIP')?'block':'none';
+  updatePreview();
+}
+function setZipType(btn,val){
+  btn.closest('.subli-toggle').querySelectorAll('.stbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); zipType=val;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TABLEAU TAILLES
+// ══════════════════════════════════════════════════════════════════════════════
+function renderTaillesTable(tailles, codes={}){
+  const wrap = document.getElementById('taille-table-wrap');
+  wrap.innerHTML = `
+    <table style="border-collapse:collapse;width:100%;min-width:500px">
+      <thead>
+        <tr>
+          <th style="background:var(--black);color:var(--white);font-family:var(--font-d);font-size:11px;letter-spacing:2px;padding:8px 12px;text-align:left;width:120px">TAILLES</th>
+          ${tailles.map(t=>`<th style="background:var(--black);color:var(--white);font-family:var(--font-d);font-size:11px;letter-spacing:1px;padding:8px;text-align:center;min-width:55px">${t}</th>`).join('')}
+          <th style="background:var(--red);color:var(--white);font-family:var(--font-d);font-size:11px;letter-spacing:1px;padding:8px;text-align:center;min-width:65px">TOTAL</th>
+        </tr>
+        ${codes && Object.keys(codes).length ? `<tr>
+          <td style="background:var(--bg4);color:var(--grey);font-size:10px;padding:4px 12px;letter-spacing:1px">CODE</td>
+          ${tailles.map(t=>`<td style="background:var(--bg4);color:var(--grey2);font-size:10px;padding:4px 8px;text-align:center">${codes[t]||'—'}</td>`).join('')}
+          <td style="background:var(--bg4)"></td>
+        </tr>`:''}
+      </thead>
+      <tbody>
+        <tr>
+          <td style="background:var(--bg3);color:var(--grey);font-size:11px;font-weight:600;letter-spacing:1px;padding:6px 12px">COMMANDÉ</td>
+          ${tailles.map(t=>`<td style="background:var(--bg2);padding:4px"><input type="number" id="qty_${t}" min="0" value="0" oninput="updateTotal()" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);color:var(--white);font-size:13px;font-weight:600;padding:5px;border-radius:0"></td>`).join('')}
+          <td id="qty_total" style="background:rgba(232,57,58,.1);color:var(--red);font-family:var(--font-d);font-size:16px;font-weight:900;text-align:center;padding:6px;border:1px solid var(--red)">0</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+function updateTotal(){
+  const inputs = document.querySelectorAll('[id^="qty_"]');
+  let tot=0;
+  inputs.forEach(inp=>{if(inp.id!=='qty_total') tot+=parseInt(inp.value||0)});
+  document.getElementById('qty_total').textContent=tot;
+  updatePreview();
+}
+
+function getTaillesData(){
+  const inputs = document.querySelectorAll('[id^="qty_"]');
+  const data={};
+  inputs.forEach(inp=>{
+    if(inp.id!=='qty_total'){
+      const t=inp.id.replace('qty_','');
+      data[t]=parseInt(inp.value||0);
+    }
+  });
+  return data;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DÉLAI AUTO
+// ══════════════════════════════════════════════════════════════════════════════
+function calcDepart(){
+  const val = document.getElementById('f_delai').value;
+  const dateWrap = document.getElementById('wrap-depart-date');
+  if(val==='custom'){
+    dateWrap.style.display='block';
+  } else {
+    dateWrap.style.display='none';
+    if(val && document.getElementById('f_arrivee').value){
+      const d = new Date(document.getElementById('f_arrivee').value);
+      d.setDate(d.getDate()+parseInt(val));
+      document.getElementById('f_depart').value = d.toISOString().split('T')[0];
+    }
+  }
+  updatePreview();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOGOS
+// ══════════════════════════════════════════════════════════════════════════════
+function addLogo(){
+  logoCount++;
+  const idx=logoCount;
+  const c=document.getElementById('logos-container');
+  const div=document.createElement('div');
+  div.className='logo-entry';
+  div.id=`logo-entry-${idx}`;
+  div.innerHTML=`
+    <span class="logo-entry-num">L${idx}</span>
+    <div class="field">
+      <label>Type</label>
+      <select id="logo_type_${idx}">
+        <option>Sublimation</option>
+        <option>Flocage</option>
+        <option>Broderie</option>
+        <option>Transfert</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Dimensions</label>
+      <input type="text" id="logo_dim_${idx}" placeholder="Ex: 8 × 6 cm">
+    </div>
+    <div class="field">
+      <label>Emplacement</label>
+      <input type="text" id="logo_loc_${idx}" placeholder="Ex: Poitrine gauche">
+    </div>
+    <button class="remove-btn" onclick="removeLogo(${idx})" title="Supprimer">×</button>
+  `;
+  c.appendChild(div);
+}
+function removeLogo(idx){ document.getElementById(`logo-entry-${idx}`)?.remove(); }
+
+function getLogosData(){
+  const logos=[];
+  document.querySelectorAll('[id^="logo-entry-"]').forEach(el=>{
+    const idx=el.id.split('-').pop();
+    const type=document.getElementById(`logo_type_${idx}`)?.value||'';
+    const dim=document.getElementById(`logo_dim_${idx}`)?.value||'';
+    const loc=document.getElementById(`logo_loc_${idx}`)?.value||'';
+    if(type||dim||loc) logos.push({type,dim,loc});
+  });
+  return logos;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UPLOAD
+// ══════════════════════════════════════════════════════════════════════════════
+function handleUpload(key,input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    uploadedImages[key]=e.target.result;
+    const zone=document.getElementById('uz_'+key);
+    zone.classList.add('has-file');
+    let img=zone.querySelector('img');
+    if(!img){img=document.createElement('img');img.className='upload-preview';zone.appendChild(img);}
+    img.src=e.target.result;
+    zone.querySelectorAll('.upload-icon,.upload-lbl,.upload-sub').forEach(el=>el.style.opacity='0');
+    document.getElementById('gd-'+{face:'bat',dos:'bat',plan:'bat'}[key]).classList.add('ready');
+    updatePreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COLORS
+// ══════════════════════════════════════════════════════════════════════════════
+function syncColor(id,val){
+  document.getElementById('cp_'+id).style.background=val;
+  document.getElementById('c_'+id).value=val;
+}
+function updateLayoutColor(key,val){
+  layoutCfg[key]=val;
+  document.getElementById('lc_'+key).style.background=val;
+  document.getElementById('lv_'+key).textContent=val;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PARAMS FIELDS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderParamsFields(){
+  const c=document.getElementById('params-fields-list');
+  c.innerHTML=Object.entries(fieldsCfg).map(([k,f])=>`
+    <div class="param-row">
+      <span class="param-label">${f.label}</span>
+      <div class="param-req-toggle">
+        <button class="req-btn ${f.req?'active-req':''}" onclick="setFieldReq('${k}',true,this)">Obligatoire</button>
+        <button class="req-btn ${!f.req?'active-opt':''}" onclick="setFieldReq('${k}',false,this)">Facultatif</button>
+      </div>
+    </div>
+  `).join('');
+}
+function setFieldReq(key,req,btn){
+  fieldsCfg[key].req=req;
+  btn.closest('.param-req-toggle').querySelectorAll('.req-btn').forEach(b=>{b.classList.remove('active-req','active-opt');});
+  btn.classList.add(req?'active-req':'active-opt');
+}
+function saveParams(){ alert('Paramètres sauvegardés ✓'); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PARAMS OPTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderParamsOptions(){
+  const c=document.getElementById('params-options-list');
+  c.innerHTML=optionsList.map((o,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span style="flex:1;font-size:12px;color:var(--grey)">${o}</span>
+      <button class="remove-btn" onclick="removeOption(${i})" style="font-size:14px">×</button>
+    </div>
+  `).join('');
+}
+function addOption(){
+  const val=document.getElementById('new-option-input').value.trim().toUpperCase();
+  if(!val) return;
+  optionsList.push(val);
+  document.getElementById('new-option-input').value='';
+  renderParamsOptions();
+  renderOptionsGrid();
+}
+function removeOption(i){ optionsList.splice(i,1); renderParamsOptions(); renderOptionsGrid(); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REFS MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════════
+function renderRefsList(){
+  const c=document.getElementById('refs-list');
+  if(!refs.length){ c.innerHTML='<div style="color:var(--grey);padding:20px">Aucune référence. Ajoutez-en une.</div>'; return; }
+  c.innerHTML=refs.map((r,i)=>`
+    <div class="card" style="display:flex;align-items:center;gap:16px">
+      <div style="flex:1">
+        <div style="font-family:var(--font-d);font-size:18px;font-weight:900;letter-spacing:1px">${r.nom}</div>
+        <div style="font-size:11px;color:var(--grey);margin-top:2px">${r.type} — ${r.tailles}</div>
+        <div style="font-size:10px;color:var(--grey2);margin-top:4px">
+          ${r.tissus.map(t=>`<span class="badge badge-grey" style="margin-right:4px">${t.nom} (${t.type})</span>`).join('')}
+          ${r.options.map(o=>`<span class="badge badge-red" style="margin-right:4px">${o}</span>`).join('')}
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="editRef(${i})">MODIFIER</button>
+      <button class="btn btn-ghost btn-sm" onclick="deleteRef(${i})" style="color:var(--red);border-color:var(--red)">SUPPRIMER</button>
+    </div>
+  `).join('');
+}
+function showAddRef(){
+  editingRefIdx=-1;
+  document.getElementById('ref-editor-title').textContent='NOUVELLE RÉFÉRENCE';
+  ['re_nom','re_t1_nom','re_t1_loc','re_t2_nom','re_t2_loc','re_t3_nom','re_t3_loc'].forEach(id=>document.getElementById(id).value='');
+  const g=document.getElementById('re_opts_grid');
+  g.innerHTML=optionsList.map(o=>`
+    <div class="chk-item" onclick="this.classList.toggle('on');this.querySelector('.chk-box').innerHTML=this.classList.contains('on')?'<span class=chk-tick>✓</span>':'';" data-opt="${o}">
+      <div class="chk-box"></div><span class="chk-lbl">${o}</span>
+    </div>`).join('');
+  document.getElementById('ref-editor').style.display='block';
+  document.getElementById('ref-editor').scrollIntoView({behavior:'smooth'});
+}
+function editRef(i){
+  editingRefIdx=i; const r=refs[i];
+  document.getElementById('ref-editor-title').textContent='MODIFIER — '+r.nom;
+  document.getElementById('re_nom').value=r.nom;
+  document.getElementById('re_type').value=r.type;
+  document.getElementById('re_tailles').value=r.tailles;
+  const tailles=r.tailles.split(',');
+  tailles.forEach(t=>{ const el=document.getElementById('rc_'+t); if(el) el.value=r.codes[t]||''; });
+  ['t1','t2','t3'].forEach((t,ti)=>{
+    const ts=r.tissus[ti]||{nom:'',loc:'',type:''};
+    document.getElementById(`re_${t}_nom`).value=ts.nom||'';
+    document.getElementById(`re_${t}_loc`).value=ts.loc||'';
+    document.getElementById(`re_${t}_type`).value=ts.type||'';
+  });
+  const g=document.getElementById('re_opts_grid');
+  g.innerHTML=optionsList.map(o=>`
+    <div class="chk-item ${r.options.includes(o)?'on':''}" onclick="this.classList.toggle('on')" data-opt="${o}">
+      <div class="chk-box">${r.options.includes(o)?'<span class="chk-tick">✓</span>':''}</div><span class="chk-lbl">${o}</span>
+    </div>`).join('');
+  document.getElementById('ref-editor').style.display='block';
+  document.getElementById('ref-editor').scrollIntoView({behavior:'smooth'});
+}
+function saveRef(){
+  const nom=document.getElementById('re_nom').value.trim();
+  if(!nom){ alert('Nom requis'); return; }
+  const tailles=document.getElementById('re_tailles').value;
+  const tailleArr=tailles.split(',');
+  const codes={};
+  tailleArr.forEach(t=>{ const el=document.getElementById('rc_'+t); if(el) codes[t]=el.value; });
+  const tissus=['t1','t2','t3'].map(t=>({
+    nom:document.getElementById(`re_${t}_nom`).value,
+    loc:document.getElementById(`re_${t}_loc`).value,
+    type:document.getElementById(`re_${t}_type`).value
+  })).filter(t=>t.nom);
+  const options=[...document.querySelectorAll('#re_opts_grid .chk-item.on')].map(el=>el.dataset.opt);
+  const ref={nom,type:document.getElementById('re_type').value,tailles,codes,tissus,options};
+  if(editingRefIdx>=0) refs[editingRefIdx]=ref;
+  else refs.push(ref);
+  renderRefsList(); renderRefGrid(); cancelRef();
+}
+function cancelRef(){ document.getElementById('ref-editor').style.display='none'; }
+function deleteRef(i){ if(confirm('Supprimer cette référence ?')){ refs.splice(i,1); renderRefsList(); renderRefGrid(); } }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LAYOUT
+// ══════════════════════════════════════════════════════════════════════════════
+function saveLayout(){ alert('Mise en page sauvegardée ✓'); }
+function resetLayout(){ if(confirm('Remettre les valeurs par défaut ?')) location.reload(); }
+function updatePreviewLayout(){}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UPDATE PREVIEW (live recap)
+// ══════════════════════════════════════════════════════════════════════════════
+function updatePreview(){}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════════════════════════
+function resetForm(){
+  if(!confirm('Réinitialiser le formulaire ?')) return;
+  selectedRef=null; selectedOptions.clear();
+  document.querySelectorAll('input[type=text],input[type=email],input[type=number],textarea').forEach(el=>el.value='');
+  document.getElementById('f_arrivee').value=new Date().toISOString().split('T')[0];
+  document.getElementById('f_delai').value='';
+  Object.keys(uploadedImages).forEach(k=>uploadedImages[k]=null);
+  ['face','dos','plan'].forEach(k=>{
+    const z=document.getElementById('uz_'+k);
+    z.classList.remove('has-file');
+    z.querySelector('img')?.remove();
+    z.querySelectorAll('.upload-icon,.upload-lbl,.upload-sub').forEach(el=>el.style.opacity='1');
+  });
+  document.getElementById('logos-container').innerHTML='';
+  logoCount=0; addLogo();
+  renderRefGrid(); renderOptionsGrid(); renderTissusBlanks();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COLLECT FORM DATA
+// ══════════════════════════════════════════════════════════════════════════════
+function collectData(){
+  const g=id=>document.getElementById(id)?.value?.trim()||'';
+  const ref=selectedRef!==null?refs[selectedRef]:null;
+  const tailles=ref?ref.tailles.split(','):['XXS','XS','S','M','L','XL','XXL'];
+  const qtys=getTaillesData();
+  const n=getTissusCount();
+  const tissus=[...Array(n).keys()].map(i=>({
+    nom:g(`t${i}_nom`), ref:g(`t${i}_ref`),
+    loc:g(`t${i}_loc`), type:g(`t${i}_type`),
+    col:g(`t${i}_col`)
+  })).filter(t=>t.nom);
+  const opts=[...selectedOptions];
+  const logos=getLogosData();
+  // Date départ
+  let depart=g('f_depart');
+  if(!depart && g('f_delai') && g('f_arrivee') && g('f_delai')!=='custom'){
+    const d=new Date(g('f_arrivee')); d.setDate(d.getDate()+parseInt(g('f_delai')));
+    depart=d.toISOString().split('T')[0];
+  }
+  return {
+    client:g('f_client'), email:g('f_email'), code:g('f_code'),
+    produit:g('f_ref_custom')||ref?.nom||'',
+    type:g('f_type_produit')||ref?.type||'',
+    arrivee:g('f_arrivee'), depart,
+    tailles, qtys, tissus, opts, logos,
+    zipType, zipTaille:g('f_zip_taille'), zipMarque:g('f_zip_marque'),
+    lycra:g('c_lycra'), surfilage:g('c_surfilage'), coutures:g('c_coutures'),
+    rem_bat:g('f_rem_bat'), rem_prod:g('f_rem_prod'), rem_subli:g('f_rem_subli'),
+    codes:ref?.codes||{}
+  };
+}
+
+function fmtDate(s){ if(!s) return '—'; try{return new Date(s).toLocaleDateString('fr-FR');}catch(e){return s;} }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PDF GENERATION
+// ══════════════════════════════════════════════════════════════════════════════
+function setStatus(msg,cls='info'){
+  const el=document.getElementById('genStatus');
+  el.textContent=msg; el.className='status '+cls;
+}
+
+async function generateAll(){ await generateOne('bat'); await generateOne('prod'); await generateOne('subli'); }
+async function generateOne(type){
+  const btn=document.getElementById('btnGen');
+  btn.disabled=true;
+  setStatus('Génération en cours...','info');
+  try{
+    const d=collectData();
+    const {jsPDF}=window.jspdf;
+    if(type==='bat') await genBAT(d,jsPDF);
+    if(type==='prod') await genPROD(d,jsPDF);
+    if(type==='subli') await genSUBLI(d,jsPDF);
+    setStatus('✓ PDF généré','ok');
+  }catch(e){
+    console.error(e); setStatus('Erreur: '+e.message,'err');
+  }
+  btn.disabled=false;
+}
+
+// ── HELPERS PDF ──────────────────────────────────────────────────────────────
+function pdfHeader(doc,W,H,title,sub=''){
+  const HH=12; const C=layoutCfg;
+  doc.setFillColor(...hexRGB(C.header)); doc.rect(0,H-HH,W,HH,'F');
+  doc.setFillColor(...hexRGB(C.primary)); doc.rect(0,H-HH-0.6,W,0.6,'F');
+  // Logo text
+  doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.setTextColor(255,255,255); doc.text('CERAMIQ.',5,H-4);
+  doc.setFontSize(9); doc.text(title,W/2,H-7,{align:'center'});
+  if(sub){ doc.setFont('helvetica','normal');doc.setFontSize(4.5);doc.setTextColor(136,136,136);doc.text(sub,W/2,H-3.5,{align:'center'}); }
+  return HH;
+}
+function pdfFooter(doc,W,cfg){
+  const FH=6; const C=layoutCfg;
+  doc.setFillColor(...hexRGB(C.header)); doc.rect(0,0,W,FH,'F');
+  doc.setFillColor(...hexRGB(C.primary)); doc.rect(0,FH,W,0.5,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(4.5); doc.setTextColor(255,255,255);
+  doc.text(cfg.site||'www.ceramiq-wear.com',4,FH-3.2);
+  doc.text(cfg.insta||'@ceramiq_wear',4,FH-0.8);
+  doc.setTextColor(...hexRGB(C.primary));
+  doc.text(cfg.email||'contact@ceramiq-wear.com',W/2,FH-2,{align:'center'});
+  doc.setTextColor(100,100,100);
+  doc.text(cfg.conf||'CERAMIQ — Confidentiel',W-4,FH-2,{align:'right'});
+  return FH;
+}
+function pdfSec(doc,x,y,title,col=[232,57,58]){
+  doc.setFillColor(...col); doc.rect(x,y-0.3,1.5,4.5,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(5.8); doc.setTextColor(17,17,17);
+  doc.text(title.toUpperCase(),x+2.5,y+3); return y-6.5;
+}
+function pdfFL(doc,x,y,lbl,fw,lw=14){
+  doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(136,136,136);
+  doc.text(lbl,x,y);
+  doc.setDrawColor(220,220,220);doc.setLineWidth(0.25);doc.line(x+lw,y-0.6,x+lw+fw,y-0.6);
+}
+function pdfPH(doc,x,y_top,w,h,lbl,sub='',img=null){
+  doc.setFillColor(242,242,242);doc.setDrawColor(220,220,220);doc.setLineWidth(0.3);
+  doc.rect(x,y_top-h,w,h,'FD');
+  const mk=2.5; const C=layoutCfg;
+  doc.setDrawColor(...hexRGB(C.primary));doc.setLineWidth(0.5);
+  [[x,y_top,1,-1],[x+w,y_top,-1,-1],[x,y_top-h,1,1],[x+w,y_top-h,-1,1]].forEach(([cx,cy,dx,dy])=>{
+    doc.line(cx,cy,cx+dx*mk,cy);doc.line(cx,cy,cx,cy+dy*mk);
+  });
+  if(img){
+    try{doc.addImage(img,'JPEG',x+0.5,y_top-h+0.5,w-1,h-1,undefined,'FAST');}
+    catch(e){try{doc.addImage(img,'PNG',x+0.5,y_top-h+0.5,w-1,h-1,undefined,'FAST');}catch(e2){}}
+  } else {
+    doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(136,136,136);
+    doc.text(lbl,x+w/2,y_top-h/2+1.5,{align:'center'});
+    if(sub){doc.setFont('helvetica','normal');doc.setFontSize(4.5);doc.text(sub,x+w/2,y_top-h/2-2,{align:'center'});}
+  }
+}
+function pdfTaillesTable(doc,x,y,d,rows,col_w=9,row_h=7,lw=24){
+  const tailles=d.tailles; const C=layoutCfg;
+  const tot_w=lw+tailles.length*col_w+12;
+  // Header
+  doc.setFillColor(17,17,17);
+  doc.rect(x,y-row_h,lw,row_h,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(255,255,255);
+  doc.text('TAILLES',x+2,y-row_h+3.2);
+  tailles.forEach((t,i)=>{
+    doc.setFillColor(17,17,17);doc.rect(x+lw+i*col_w,y-row_h,col_w,row_h,'F');
+    doc.setTextColor(255,255,255);doc.text(t,x+lw+i*col_w+col_w/2,y-row_h+3.2,{align:'center'});
+  });
+  doc.setFillColor(...hexRGB(C.primary));doc.rect(x+lw+tailles.length*col_w,y-row_h,12,row_h,'F');
+  doc.setTextColor(255,255,255);doc.text('TOT',x+lw+tailles.length*col_w+6,y-row_h+3.2,{align:'center'});
+
+  // Code row si dispo
+  let oy=y-row_h;
+  if(d.codes && Object.keys(d.codes).length){
+    oy-=5;
+    doc.setFillColor(34,34,34);doc.rect(x,oy,tot_w,5,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(4);doc.setTextColor(100,100,100);
+    doc.text('CODE',x+2,oy+3.2);
+    tailles.forEach((t,i)=>{
+      doc.text(d.codes[t]||'',x+lw+i*col_w+col_w/2,oy+3.2,{align:'center'});
+    });
+  }
+
+  // Rows
+  rows.forEach((rl,ri)=>{
+    const ry=oy-(ri+1)*row_h;
+    const isEmpty=rl==='';
+    const bg=isEmpty?[26,26,26]:(ri%2===0?[244,244,244]:[255,255,255]);
+    doc.setFillColor(...bg);doc.rect(x,ry,lw,row_h,'F');
+    if(!isEmpty){
+      doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(68,68,68);
+      doc.text(rl,x+2,ry+row_h/2+1.5);
+    }
+    tailles.forEach((t,i)=>{
+      const tx=x+lw+i*col_w;
+      doc.setFillColor(...bg);doc.rect(tx,ry,col_w,row_h,'F');
+      doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);doc.rect(tx,ry,col_w,row_h,'S');
+      if(ri===0 && d.qtys[t]){
+        doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(17,17,17);
+        doc.text(String(d.qtys[t]),tx+col_w/2,ry+row_h/2+1.5,{align:'center'});
+      }
+    });
+    // Total
+    const tot_x=x+lw+tailles.length*col_w;
+    doc.setFillColor(255,240,240);doc.rect(tot_x,ry,12,row_h,'F');
+    doc.setDrawColor(...hexRGB(C.primary));doc.setLineWidth(0.25);doc.rect(tot_x,ry,12,row_h,'S');
+    if(ri===0){
+      const tot=Object.values(d.qtys).reduce((s,v)=>s+(v||0),0);
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...hexRGB(C.primary));
+      doc.text(String(tot),tot_x+6,ry+row_h/2+2,{align:'center'});
+    }
+  });
+  doc.setDrawColor(220,220,220);doc.setLineWidth(0.3);
+  doc.rect(x,oy-(rows.length)*row_h,tot_w,(rows.length)*row_h+row_h+(d.codes?5:0),'S');
+  return oy-rows.length*row_h;
+}
+function pdfLogoBlock(doc,x,y,w,idx,logo){
+  const bh=13;
+  doc.setFillColor(242,242,242);doc.setDrawColor(220,220,220);doc.setLineWidth(0.25);
+  doc.rect(x,y-bh,w,bh,'FD');
+  doc.setFillColor(17,17,17);doc.rect(x,y-bh,5.5,bh,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(255,255,255);
+  doc.text(`L${idx}`,x+2.75,y-bh/2+1.5,{align:'center'});
+  const ix=x+7;
+  doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(68,68,68);
+  doc.text(logo.type||'—',ix,y-2.5);
+  doc.setFont('helvetica','normal');doc.setFontSize(4.8);doc.setTextColor(136,136,136);
+  doc.text('DIM.',ix,y-6); doc.setTextColor(68,68,68); doc.text(logo.dim||'—',ix+8,y-6);
+  doc.text('EMPL.',ix,y-9.5); doc.text(logo.loc||'—',ix+10,y-9.5);
+  return y-bh-1.5;
+}
+function hexRGB(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+function pdfIdRow(doc,W,y,infos){
+  const h=8; doc.setFillColor(17,17,17); doc.rect(0,y-h,W,h,'F');
+  const iw=(W-10)/infos.length;
+  infos.forEach(([k,v],i)=>{
+    const ix=5+i*iw;
+    doc.setFont('helvetica','normal');doc.setFontSize(4);doc.setTextColor(100,100,100);doc.text(k,ix,y-5.5);
+    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(255,255,255);doc.text(v||'—',ix,y-1.5);
+  });
+  return y-h-1.5;
+}
+function pdfSectionBar(doc,W,y,num,title){
+  doc.setFillColor(...hexRGB(layoutCfg.primary));doc.rect(0,y-5.5,W,5.5,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(255,255,255);
+  doc.text(`${num} ${title}`,5,y-1.5);
+  return y-5.5-2;
+}
+
+// ═══════════════════════════════════════
+// GEN BAT CLIENT (A4 Paysage)
+// ═══════════════════════════════════════
+async function genBAT(d,jsPDF){
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const W=297,H=210; const C=layoutCfg;
+  const cfg={site:document.getElementById('lg_site')?.value,insta:document.getElementById('lg_insta')?.value,email:document.getElementById('lg_email')?.value,conf:document.getElementById('lg_conf')?.value};
+
+  pdfHeader(doc,W,H,'BON À TIRER','DOCUMENT DE VALIDATION CLIENT');
+  pdfFooter(doc,W,cfg);
+
+  const CT=H-12-1.5, CB=6+1.5;
+
+  // Bande noire droite
+  const BW=62;
+  doc.setFillColor(...hexRGB(C.band)); doc.rect(W-BW,CB,BW,CT-CB,'F');
+  doc.setFillColor(...hexRGB(C.primary)); doc.rect(W-BW,CB,0.7,CT-CB,'F');
+
+  // Infos dans bande
+  let iy=CT-3;
+  [[`PRODUIT`,d.produit],[`TYPE`,d.type],[`RÉF.`,d.code]].forEach(([k,v])=>{
+    doc.setFont('helvetica','normal');doc.setFontSize(4.5);doc.setTextColor(100,100,100);
+    doc.text(k,W-BW+3,iy);
+    doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);
+    doc.text(v||'—',W-BW+3,iy-3.5); iy-=9;
+  });
+  doc.setFillColor(40,40,40);doc.rect(W-BW+2,iy,BW-4,0.3,'F'); iy-=4;
+
+  iy=pdfSec(doc,W-BW+2,iy,'Client & Commande',[...hexRGB(C.primary)]);
+  [['CLIENT',d.client],['QUANTITÉ',String(Object.values(d.qtys).reduce((s,v)=>s+v,0))],['TAILLE(S)',d.tailles.join(', ')],['ARRIVÉE',fmtDate(d.arrivee)],['DÉPART',fmtDate(d.depart)],['EMAIL',d.email]].forEach(([k,v])=>{
+    pdfFL(doc,W-BW+3,iy,k,BW-20);iy-=5.5;
+    if(v){doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(220,220,220);doc.text(v,W-BW+17,iy+5.5-0.5);}
+  });
+  doc.setFillColor(30,30,30);doc.rect(W-BW+2,iy,BW-4,0.3,'F'); iy-=4;
+
+  // Tissus actifs seulement
+  if(d.tissus.length){
+    iy=pdfSec(doc,W-BW+2,iy,'Matière',[...hexRGB(C.primary)]);
+    d.tissus.forEach((t,i)=>{
+      doc.setFillColor(...hexRGB(C.primary));doc.rect(W-BW+3,iy-1.8,4.5,4.5,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(4.5);doc.setTextColor(255,255,255);
+      doc.text(`T${i+1}`,W-BW+5.25,iy+0.8,{align:'center'});
+      doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(200,200,200);
+      doc.text(`${t.nom} — ${t.loc}`,W-BW+9,iy); iy-=4.5;
+    });
+    doc.setFillColor(30,30,30);doc.rect(W-BW+2,iy,BW-4,0.3,'F'); iy-=4;
+  }
+
+  // Options actives seulement
+  if(d.opts.length){
+    iy=pdfSec(doc,W-BW+2,iy,'Options',[...hexRGB(C.primary)]);
+    d.opts.forEach(o=>{
+      doc.setFillColor(...hexRGB(C.primary));doc.rect(W-BW+3,iy-1.8,2.5,2.5,'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(220,220,220);
+      doc.text(o,W-BW+7,iy); iy-=4.5;
+    });
+    doc.setFillColor(30,30,30);doc.rect(W-BW+2,iy,BW-4,0.3,'F'); iy-=4;
+  }
+
+  // Zone paramètres / infos libres
+  iy=pdfSec(doc,W-BW+2,iy,'Notes / Paramètres',[...hexRGB(C.header)]);
+  const ph=Math.max(16,iy-CB-22);
+  doc.setFillColor(26,26,26);doc.setDrawColor(40,40,40);doc.setLineWidth(0.25);
+  doc.rect(W-BW+2,iy-ph,BW-4,ph,'FD');
+  if(d.rem_bat){
+    doc.setFont('helvetica','normal');doc.setFontSize(4.8);doc.setTextColor(180,180,180);
+    const lines=doc.splitTextToSize(d.rem_bat,BW-8);
+    doc.text(lines,W-BW+4,iy-4);
+  }
+  iy-=ph+2;
+
+  // Validation
+  iy=pdfSec(doc,W-BW+2,iy,'Validation',[...hexRGB(C.primary)]);
+  const sig_h=iy-CB-1;
+  doc.setFillColor(26,26,26);doc.setDrawColor(40,40,40);doc.setLineWidth(0.25);
+  doc.rect(W-BW+2,CB+1,BW-4,sig_h,'FD');
+  doc.setFont('helvetica','normal');doc.setFontSize(4.5);doc.setTextColor(100,100,100);
+  doc.text('Signature / Cachet / Date',W-BW+BW/2,CB+sig_h/2+1,{align:'center'});
+  doc.setDrawColor(50,50,50);doc.line(W-BW+5,CB+5,W-4,CB+5);
+
+  // ── VISUELS GAUCHE ──
+  const VW=W-BW-3;
+  const CH=CT-CB;
+  const h3d=CH*0.57, w3d=(VW-1.5)/2;
+  const h2d=CH-h3d-1;
+
+  pdfPH(doc,2,CT,w3d,h3d,'VUE 3D — FACE','Avant',uploadedImages.face);
+  pdfPH(doc,2+w3d+1.5,CT,w3d,h3d,'VUE 3D — DOS','Arrière',uploadedImages.dos);
+  pdfPH(doc,2,CT-h3d-0.5,VW,h2d,'VUE À PLAT / PATRONAGE','',uploadedImages.plan);
+
+  const fname=`BAT_${d.client||'CLIENT'}_${d.code||'REF'}.pdf`.replace(/\s+/g,'_');
+  doc.save(fname);
+
+  // Email
+  if(d.email){
+    const subj=encodeURIComponent(`BAT à valider — ${d.produit} — ${d.code}`);
+    const body=encodeURIComponent(`Bonjour,\n\nVeuillez trouver ci-joint le bon à tirer pour votre commande.\n\nProduit : ${d.produit}\nRéférence : ${d.code}\nQuantité : ${Object.values(d.qtys).reduce((s,v)=>s+v,0)} pcs\n\nMerci de vérifier attentivement les couleurs, visuels et options.\n\nCordialement,\nL'équipe CERAMIQ`);
+    setTimeout(()=>window.open(`mailto:${d.email}?subject=${subj}&body=${body}`,'_blank'),600);
+  }
+}
+
+// ═══════════════════════════════════════
+// GEN BON PROD (A4 Portrait)
+// ═══════════════════════════════════════
+async function genPROD(d,jsPDF){
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297; const C=layoutCfg;
+  const cfg={site:document.getElementById('lg_site')?.value,insta:document.getElementById('lg_insta')?.value,email:document.getElementById('lg_email')?.value,conf:document.getElementById('lg_conf')?.value};
+
+  pdfHeader(doc,W,H,'BON DE PRODUCTION — ATELIER','USAGE INTERNE');
+  pdfFooter(doc,W,cfg);
+
+  const CT=H-12-1.5, CB=6+1.5, P=6;
+  let y=CT;
+
+  // ID Row
+  y=pdfIdRow(doc,W,y,[['CLIENT',d.client],['PRODUIT',d.produit],['RÉF.',d.code],['ARRIVÉE',fmtDate(d.arrivee)],['DÉPART',fmtDate(d.depart)],['QTÉ',String(Object.values(d.qtys).reduce((a,v)=>a+v,0))]]);
+
+  // ① DÉCOUPE
+  y=pdfSectionBar(doc,W,y,'①','DÉCOUPE');
+
+  // Vue 2D
+  const h2d=58, w2d=W-2*P;
+  pdfPH(doc,P,y,w2d,h2d,'VUE À PLAT / PATRONAGE','Référence découpe',uploadedImages.plan);
+  y-=h2d+2;
+
+  // Tissus découpe (actifs seulement)
+  y=pdfSec(doc,P,y,'Tissus & Découpe',hexRGB(C.primary));
+  const TW=(W-2*P-(d.tissus.length-1)*2)/Math.max(d.tissus.length,1);
+  d.tissus.forEach((t,i)=>{
+    const tx=P+i*(TW+2);
+    doc.setFillColor(17,17,17);doc.rect(tx,y+0.8,4.5,4.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(255,255,255);
+    doc.text(`T${i+1}`,tx+2.25,y+3.5,{align:'center'});
+    doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(17,17,17);
+    doc.text(`${t.nom}`,tx+6,y+3);
+    let ty=y-4;
+    pdfFL(doc,tx,ty,'NOM',TW-10);doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(68,68,68);doc.text(t.nom,tx+10,ty);ty-=4.5;
+    pdfFL(doc,tx,ty,'LOCAL.',TW-11,11);doc.text(t.loc,tx+11,ty);ty-=4.5;
+    // Type badge
+    doc.setFillColor(t.type==='SUBLI'?...[232,57,58]:[68,68,68]);
+    doc.rect(tx,ty-2,TW-1,4,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(4.5);doc.setTextColor(255,255,255);
+    doc.text(t.type,tx+(TW-1)/2,ty+0.8,{align:'center'});ty-=5;
+    pdfFL(doc,tx,ty,'DATE DÉCOUPE',TW-18,18);ty-=4.5;
+    // Visa box
+    doc.setFillColor(242,242,242);doc.setDrawColor(220,220,220);doc.setLineWidth(0.25);
+    doc.rect(tx,ty-6,TW-1,6,'FD');
+    doc.setFont('helvetica','normal');doc.setFontSize(4);doc.setTextColor(136,136,136);
+    doc.text('Visa + Date',tx+(TW-1)/2,ty-2.5,{align:'center'});
+  });
+  y-=42;
+
+  // ② CONFECTION
+  y=pdfSectionBar(doc,W,y,'②','CONFECTION');
+
+  // 3D côte à côte
+  const w3=W/2-P-1.5, h3=36;
+  pdfPH(doc,P,y,w3,h3,'VUE 3D — FACE','',uploadedImages.face);
+  pdfPH(doc,P+w3+2,y,w3,h3,'VUE 3D — DOS','',uploadedImages.dos);
+
+  // Infos confection droite — sur la même hauteur
+  const ix=P+w3*2+6, iw=W-ix-P;
+  let iy2=y;
+  if(d.opts.length){
+    iy2=pdfSec(doc,ix,iy2,'Accessoires',hexRGB(C.primary));
+    d.opts.forEach(o=>{
+      doc.setFillColor(...hexRGB(C.primary));doc.rect(ix,iy2-1.6,2.2,2.2,'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(17,17,17);
+      doc.text(o,ix+3.5,iy2);iy2-=4.5;
+    });
+    if(selectedOptions.has('ZIP')){
+      doc.setFont('helvetica','normal');doc.setFontSize(4.8);doc.setTextColor(68,68,68);
+      doc.text(`${zipType} — ${d.zipTaille||'?'} — ${d.zipMarque||''}`,ix,iy2);iy2-=5;
+    }
+  }
+  if(d.logos.length){
+    iy2=pdfSec(doc,ix,iy2,'Logos',hexRGB(C.primary));
+    d.logos.forEach((logo,i)=>{ iy2=pdfLogoBlock(doc,ix,iy2,iw,i+1,logo); });
+  }
+  y-=h3+3;
+
+  // Couleurs tech (si renseignées)
+  const techCols=[[d.lycra,'LYCRA'],[d.surfilage,'SURFILAGE'],[d.coutures,'COUTURES']].filter(([v])=>v);
+  if(techCols.length){
+    y=pdfSec(doc,P,y,'Couleurs techniques',hexRGB(C.primary));
+    const tcw=(W-2*P-(techCols.length-1)*3)/techCols.length;
+    techCols.forEach(([val,lbl],i)=>{
+      const tx=P+i*(tcw+3);
+      doc.setFont('helvetica','bold');doc.setFontSize(5);doc.setTextColor(68,68,68);doc.text(lbl,tx,y);
+      doc.setFillColor(255,255,255);doc.setDrawColor(220,220,220);doc.setLineWidth(0.25);
+      doc.rect(tx,y-5,tcw,4,'FD');
+      doc.setFont('helvetica','normal');doc.setFontSize(4.8);doc.setTextColor(68,68,68);
+      doc.text(val,tx+1,y-2);
+    });
+    y-=9;
+  }
+
+  // Remarques prod
+  if(d.rem_prod){
+    y=pdfSec(doc,P,y,'Instructions CERAMIQ',hexRGB(C.primary));
+    doc.setFillColor(238,244,255);doc.setDrawColor(45,107,228);doc.setLineWidth(0.3);
+    const rh=Math.min(14,y-CB-30);
+    doc.rect(P,y-rh,W-2*P,rh,'FD');
+    doc.setFont('helvetica','italic');doc.setFontSize(4.8);doc.setTextColor(45,107,228);
+    doc.text(doc.splitTextToSize(d.rem_prod,W-2*P-4),P+2,y-4);
+    y-=rh+2;
+  }
+
+  // Tableau suivi
+  y=pdfSec(doc,P,y,'Suivi production par taille',hexRGB(C.primary));
+  const rows=['COMMANDÉ','DÉCOUPÉ','ENVOYÉ SUBLI','REÇU SUBLI','CONFECTIONNÉ',''];
+  pdfTaillesTable(doc,P,y,d,rows,8.5,6.5,24);
+
+  doc.save(`PROD_${d.client||'CLIENT'}_${d.code||'REF'}.pdf`.replace(/\s+/g,'_'));
+}
+
+// ═══════════════════════════════════════
+// GEN BON SUBLI (A4 Portrait)
+// ═══════════════════════════════════════
+async function genSUBLI(d,jsPDF){
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297; const C=layoutCfg;
+  const cfg={site:document.getElementById('lg_site')?.value,insta:document.getElementById('lg_insta')?.value,email:document.getElementById('lg_email')?.value,conf:document.getElementById('lg_conf')?.value};
+
+  pdfHeader(doc,W,H,'BON DE SUBLIMATION','USAGE INTERNE — TUNISIE');
+  pdfFooter(doc,W,cfg);
+
+  const CT=H-12-1.5, CB=6+1.5, P=6;
+  let y=CT;
+
+  // ID
+  y=pdfIdRow(doc,W,y,[['CLIENT',d.client],['PRODUIT',d.produit],['RÉF.',d.code],['ENVOI',fmtDate(d.arrivee)],['RETOUR PRÉVU',fmtDate(d.depart)],['QTÉ',String(Object.values(d.qtys).reduce((a,v)=>a+v,0))]]);
+
+  // VUE 2D GRANDE
+  y=pdfSec(doc,P,y,'Vue impression — Patronage subli',hexRGB(C.primary));
+  const h2d=65;
+  pdfPH(doc,P,y,W-2*P,h2d,'VUE À PLAT / FICHIER IMPRESSION SUBLI','Insérer le visuel de sublimation ici',uploadedImages.plan);
+  y-=h2d+3;
+
+  // 3D + Fichiers impression côte à côte
+  y=pdfSec(doc,P,y,'Références produit',hexRGB(C.primary));
+  const w3=W/2-P-2, h3=34;
+  pdfPH(doc,P,y,w3,h3,'VUE 3D — FACE','',uploadedImages.face);
+  pdfPH(doc,P+w3+3,y,w3,h3,'VUE 3D — DOS','',uploadedImages.dos);
+  y-=h3+3;
+
+  // Instructions subli
+  if(d.rem_subli){
+    y=pdfSec(doc,P,y,'Instructions CERAMIQ',hexRGB(C.primary));
+    doc.setFillColor(238,244,255);doc.setDrawColor(45,107,228);doc.setLineWidth(0.3);
+    const rh=Math.min(12,y-CB-55);
+    doc.rect(P,y-rh,W-2*P,rh,'FD');
+    doc.setFont('helvetica','italic');doc.setFontSize(4.8);doc.setTextColor(45,107,228);
+    doc.text(doc.splitTextToSize(d.rem_subli,W-2*P-4),P+2,y-4);
+    y-=rh+2;
+  }
+
+  // Tableau suivi
+  y=pdfSec(doc,P,y,'Suivi quantités par taille',hexRGB(C.primary));
+  const rows=['COMMANDÉ','ENVOYÉ SUBLI','SUBLIMÉ REÇU','ÉCART'];
+  const bot=pdfTaillesTable(doc,P,y,d,rows,8.5,6.5,26);
+  y=bot-4;
+
+  // Étapes validation
+  y=pdfSec(doc,P,y,'Validation étapes',hexRGB(C.primary));
+  const etapes=[['ENVOI ATELIER→SUBLI'],['RETOUR SUBLI→ATELIER'],['CONTRÔLE QUALITÉ']];
+  const ew=(W-2*P-(etapes.length-1)*3)/etapes.length;
+  etapes.forEach(([titre],i)=>{
+    const ex=P+i*(ew+3);
+    doc.setFillColor(...hexRGB(C.primary));doc.rect(ex,y,ew,5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(4.5);doc.setTextColor(255,255,255);
+    doc.text(titre,ex+ew/2,y+3.3,{align:'center'});
+    doc.setFillColor(242,242,242);doc.setDrawColor(220,220,220);doc.setLineWidth(0.25);
+    doc.rect(ex,y-12,ew,12,'FD');
+    doc.setFont('helvetica','normal');doc.setFontSize(4.8);doc.setTextColor(68,68,68);
+    doc.text('Date :',ex+2,y-4);doc.line(ex+11,y-4.3,ex+ew-2,y-4.3);
+    doc.text('Visa :',ex+2,y-8.5);doc.line(ex+11,y-8.8,ex+ew-2,y-8.8);
+  });
+  y-=16;
+
+  // Retour sublimeur
+  if(y>CB+8){
+    y=pdfSec(doc,P,y,'Retour Sublimeur → CERAMIQ',[68,68,68]);
+    const rh=Math.max(8,y-CB-1);
+    doc.setFillColor(242,242,242);doc.setDrawColor(220,220,220);doc.setLineWidth(0.25);
+    doc.rect(P,CB+1,W-2*P,rh,'FD');
+    doc.setFont('helvetica','italic');doc.setFontSize(4.8);doc.setTextColor(136,136,136);
+    doc.text('Observations, incidents, remarques...',P+2,CB+rh-3);
+  }
+
+  doc.save(`SUBLI_${d.client||'CLIENT'}_${d.code||'REF'}.pdf`.replace(/\s+/g,'_'));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════════════════════════════════════
+init();
+// Init tailles table par défaut
+renderTaillesTable(['XXS','XS','S','M','L','XL','XXL'],{});
+</script>
+</body>
+</html>
